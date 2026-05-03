@@ -6,6 +6,11 @@ import { api } from "../../../src/lib/api";
 import { useAuthStore } from "../../../src/store/useStore";
 import toast, { Toaster } from "react-hot-toast";
 
+const DEMO_ACCOUNTS = [
+  { label: "Admin", email: "admin@janimple.com", password: "password123" },
+  { label: "Member", email: "member@janimple.com", password: "password123" },
+];
+
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -31,6 +36,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
       <Toaster position="top-right" />
       <div className="w-full max-w-md">
+
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-xl mb-4">
@@ -40,6 +46,28 @@ export default function LoginPage() {
           </div>
           <h1 className="text-2xl font-bold text-white">Team Hub</h1>
           <p className="text-gray-400 mt-1">Sign in to your account</p>
+        </div>
+
+        {/* Demo Credentials */}
+        <div className="mb-4 p-4 bg-indigo-950/60 border border-indigo-800/50 rounded-2xl">
+          <p className="text-xs text-indigo-400 font-semibold uppercase tracking-wider mb-3">🎯 Demo Accounts</p>
+          <div className="space-y-2">
+            {DEMO_ACCOUNTS.map((acc) => (
+              <div key={acc.email} className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-gray-300">{acc.label}</p>
+                  <p className="text-xs text-gray-500">{acc.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setForm({ email: acc.email, password: acc.password })}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs rounded-lg transition font-medium"
+                >
+                  Use →
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Form */}
