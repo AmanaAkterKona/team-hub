@@ -9,27 +9,53 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const httpServer = createServer(app);
 
+// CORS Origins Setup
+const allowedOrigins = [
+  process.env.CLIENT_URL, // Railway Frontend URL
+  "http://localhost:3000" // Local Development
+];
+
+// Socket.io Setup with updated CORS
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: allowedOrigins,
     credentials: true,
   },
 });
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
+
+// Finalized CORS Configuration for Cookies
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl) or if in allowed list
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// API Routes
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Team Hub API running" });
 });
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/workspaces", require("./routes/workspaces"));
 app.use("/api/goals", require("./routes/goals"));
 app.use("/api/announcements", require("./routes/announcements"));
 app.use("/api/action-items", require("./routes/actionItems"));
+
+// Swagger Documentation
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 
@@ -44,6 +70,7 @@ const swaggerSpec = swaggerJsdoc({
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Socket.io Logic
 const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
@@ -65,6 +92,7 @@ io.on("connection", (socket) => {
   });
 });
 
+// Error Handling Middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });

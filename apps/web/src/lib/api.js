@@ -1,5 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
+// apps/web/src/lib/api.js আপডেট করুন
 async function request(endpoint, options = {}) {
   const res = await fetch(`${API_URL}${endpoint}`, {
     headers: { "Content-Type": "application/json", ...options.headers },
@@ -7,12 +8,22 @@ async function request(endpoint, options = {}) {
     ...options,
   });
 
-  if (res.status === 401) {
-    // Try refresh
-    await fetch(`${API_URL}/api/auth/refresh`, {
+  if (res.status === 401 && endpoint !== "/api/auth/refresh") {
+    // ১. টোকেন রিফ্রেশ করার চেষ্টা করুন
+    const refreshRes = await fetch(`${API_URL}/api/auth/refresh`, {
       method: "POST",
       credentials: "include",
     });
+
+    if (refreshRes.ok) {
+      // ২. রিফ্রেশ সফল হলে আসল রিকোয়েস্টটি আবার রিটার্ন করুন
+      return request(endpoint, options);
+    } else {
+      // ৩. রিফ্রেশ ফেইল করলে লগইন পেজে পাঠান (অপশনাল কিন্তু ভালো প্র্যাকটিস)
+      if (typeof window !== "undefined") {
+        window.location.href = "/auth/login";
+      }
+    }
   }
 
   const data = await res.json().catch(() => ({}));

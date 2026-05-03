@@ -22,8 +22,9 @@ const generateTokens = (user) => {
 
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  secure: true, // প্রোডাকশনে HTTPS এর জন্য এটি মাস্ট
+  sameSite: "none", // ক্রস-সাইট কুকি শেয়ারিং এর জন্য 'none' প্রয়োজন
+  path: "/",
 };
 
 /**
