@@ -1,22 +1,32 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 async function request(endpoint, options = {}) {
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  let res = await fetch(`${API_URL}${endpoint}`, {
     headers: { "Content-Type": "application/json", ...options.headers },
     credentials: "include",
     ...options,
   });
 
   if (res.status === 401) {
-    // Try refresh
-    await fetch(`${API_URL}/api/auth/refresh`, {
+    const refreshRes = await fetch(`${API_URL}/api/auth/refresh`, {
       method: "POST",
       credentials: "include",
     });
+
+    if (refreshRes.ok) {
+      // retry original request
+      res = await fetch(`${API_URL}${endpoint}`, {
+        headers: { "Content-Type": "application/json", ...options.headers },
+        credentials: "include",
+        ...options,
+      });
+    }
   }
 
   const data = await res.json().catch(() => ({}));
+
   if (!res.ok) throw new Error(data.error || "Something went wrong");
+
   return data;
 }
 
