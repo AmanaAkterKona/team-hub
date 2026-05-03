@@ -352,7 +352,7 @@ export default function DashboardLayout({ children }) {
     { label: "Kanban Board", href: `/workspace/${wid}?tab=kanban`, icon: Icons.Kanban },
     { label: "Announcements", href: `/workspace/${wid}?tab=announcements`, icon: Icons.Announcements },
   ] : [
-    { label: "My Workspace", href: "/dashboard/workspace", icon: Icons.Workspace },
+{ label: "My Workspace", href: "/dashboard", icon: Icons.Workspace },
   ]),
 ];
 
